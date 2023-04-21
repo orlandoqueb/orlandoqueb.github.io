@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Comment Section for MP3</title>
+
+	<style>
+		body {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+		}
+	</style>
+
+</head>
+<body>
+
+	<div>
+		<h1>Easy commenting</h1>
+		<br>
+		<h2>Update Audio Player with URL</h2>
+	<input type="text" id="url-input" placeholder="Enter MP3 URL">
+	<button onclick="updateAudio()">Confirm</button>
+	<br><br>
+	</div>
+	
+	<br>
+	
+	<audio id="audio-player" src="https://cdn.discordapp.com/attachments/1097667904633307226/1098310693767364710/Laventure_solo_-_Solonaute_jeu_et_ecoute_Rina.mp3" controls></audio>
+	<br>
+	
+	<div>
+		<button onclick="skipBack(10)">-10s</button>
+		<button onclick="skipBack(5)">-5s</button>
+		<button onclick="skipBack(3)">-3s</button>
+	</div>
+	<br>
+	<div>
+		<input type="checkbox" id="pause-checkbox">
+		<label for="pause-checkbox">Pause/Play mp3 when writing comment</label>
+	</div>
+	<br>
+	<div>
+		<textarea id="comment-box" oninput="pauseif()" placeholder="Add your comment here"></textarea>
+		<button onclick="addComment()">Add Comment</button>
+	</div>
+
+	<br>
+	<ul id="comments-list"></ul>
+
+	<script>
+		let comments = [];
+		const audioPlayer = document.getElementById('audio-player');
+		const checkbox = document.getElementById('pause-checkbox');
+
+		function addComment() {
+			const commentBox = document.getElementById('comment-box');
+			const commentText = commentBox.value.trim();
+
+			if (commentText !== '') {
+				const time = audioPlayer.currentTime;
+				const comment = {
+					text: commentText,
+					time: time
+				};
+				comments.push(comment);
+				commentBox.value = '';
+				showComments();
+			}
+
+			
+			if (checkbox.checked) {
+			audioPlayer.play();
+			}
+		}
+
+		function pauseif() {
+		
+  		if (checkbox.checked) {
+			audioPlayer.pause();
+		}
+		}
+
+		function showComments() {
+			const commentsList = document.getElementById('comments-list');
+			commentsList.innerHTML = '';
+
+			comments.forEach(comment => {
+				const li = document.createElement('li');
+				const deleteBtn = document.createElement('button');
+				deleteBtn.innerHTML = 'Delete';
+				deleteBtn.onclick = function() {
+					deleteComment(comment);
+				}
+				const timeStr = formatTime(comment.time);
+				li.innerHTML = `Time: ${timeStr} - Comment: ${comment.text}`;
+				li.onclick = function() {
+					audioPlayer.currentTime = comment.time;
+				}
+				li.appendChild(deleteBtn);
+				commentsList.appendChild(li);
+			})
+		}
+
+		function deleteComment(comment) {
+			comments = comments.filter(c => c !== comment);
+			showComments();
+		}
+
+		function formatTime(time) {
+			const hours = Math.floor(time / 3600);
+			const minutes = Math.floor((time - hours * 3600) / 60);
+			const seconds = Math.floor(time % 60);
+			const timeStr = padNumber(hours) + ':' + padNumber(minutes) + ':' + padNumber(seconds);
+			return timeStr;
+		}
+
+		function padNumber(num) {
+			if (num < 10) {
+				return '0' + num;
+			} else {
+				return num.toString();
+			}
+		}
+
+		function skipBack(seconds) {
+			const newTime = Math.max(audioPlayer.currentTime - seconds, 0);
+			audioPlayer.currentTime = newTime;
+		}
+
+		function updateAudio() {
+			const urlInput = document.getElementById('url-input');
+			const audioPlayer = document.getElementById('audio-player');
+			const mp3URL = urlInput.value.trim();
+			if (mp3URL !== '') {
+				audioPlayer.src = mp3URL;
+				audioPlayer.load();
+			}
+		}
+	</script>
+</body>
+</html>
